@@ -199,8 +199,9 @@ class EncodedNetworkFramework(NetworkFramework):
     Make sure that the elements of the encoding are floats.
     
     """
-    # Replace line below by content of function
-    raise NotImplementedError
+    encoded_label = [0.0] * 10
+    encoded_label[label] = 1.0
+    return encoded_label
 
   def GetNetworkLabel(self):
     """
@@ -229,8 +230,8 @@ class EncodedNetworkFramework(NetworkFramework):
     # which is 3
     
     """
-    # Replace line below by content of function
-    raise NotImplementedError
+    labels = map(lambda node: node.transformed_value, self.network.outputs)
+    return labels.index(max(labels))
 
   def Convert(self, image):
     """
@@ -253,8 +254,12 @@ class EncodedNetworkFramework(NetworkFramework):
     value should be 1).
     
     """
-    # Replace line below by content of function
-    raise NotImplementedError
+    # flatten matrix into list
+    pixel_list = reduce(lambda acc, elt: acc.extend(elt), image.pixels)
+    pixel_list = map(lambda pixel: pixel / 256.0, pixel_list)
+    new_input = Input()
+    new_input.values = pixel_list
+    return new_input
 
   def InitializeWeights(self):
     """
@@ -276,10 +281,8 @@ class EncodedNetworkFramework(NetworkFramework):
     of self.network.
     
     """
-    # replace line below by content of function
-    pass
-
-
+    for weight in self.network.weights:
+        weight.value = random.uniform(-0.01, 0.01)
 
 #<--- Problem 3, Question 6 --->
 
