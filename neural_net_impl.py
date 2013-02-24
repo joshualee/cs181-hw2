@@ -38,11 +38,30 @@ def FeedForward(network, input):
 
   network.inputs[i].raw_value = input[i]
   """
+  '''
+  Note: We assume that nodes in network.inputs, network.hidden_nodes,
+        and network.outputs are sorted in topological order, so we may
+        iterate through each list in order and have the invariant
+        that all my parents have already been processed.
+  '''
+  
+  def propagate_forward(nodes):
+    for node in nodes:
+      node.raw_value = NeuralNetwork.ComputeRawValue(node)
+      node.transformed_value = NeuralNetwork.Sigmoid(node.raw_value)
+  
   network.CheckComplete()
+  
   # 1) Assign input values to input nodes
+  for i, input_node in enumerate(network.inputs):
+    input_node.raw_value = input.values[i]
+    # for input nodes, the transformed value is just the raw input value
+    input_node.transformed_value = input_node.raw_value
+
   # 2) Propagates to hidden layer
   # 3) Propagates to the output layer
-  pass
+  propagate_forward(network.hidden_nodes + network.outputs)
+  
 
 #< --- Problem 3, Question 2
 
@@ -86,11 +105,36 @@ def Backprop(network, input, target, learning_rate):
   target[i] - network.outputs[i].transformed_value
   
   """
+  # sets the delta for each node (hidden or output)
+  def propagate_backward(nodes):
+    # set delta for all nodes
+    for i, node in enumerate(nodes):
+      # node is an output node
+      if len(node.forward_neighbors) == 0:
+        node.error = target.values[i] - node.transformed_value
+      else:
+        # only works if we process in topological order, which we assume
+        node.error = sum(map(
+          lambda child, weight: weight.value * child.delta, 
+          zip(node.forward_neighbors, node.forward_weights)
+        ))                 
+      node.delta = node.error * NeuralNetwork.SigmoidPrime(node.raw_value)        
+      
+  # updates weight based on delta. do in two steps so we don't accidently use
+  # the next time step's weight in our delta calculation
+  def update_weights(nodes):
+    for node in nodes:
+      for weight in node.weights:
+        weight.value = weight.value + learning_rate * node.transformed_value * node.delta
+  
   network.CheckComplete()
   # 1) We first propagate the input through the network
+  FeedForward(network, input)
+  
   # 2) Then we compute the errors and update the weigths starting with the last layer
   # 3) We now propagate the errors to the hidden layer, and update the weights there too
-  pass
+  propagate_backward((network.hidden_nodes + network.output_nodes)[::-1])
+  update_weights(network.hidden_nodes + network_outputs)
 
 # <--- Problem 3, Question 3 --->
 
