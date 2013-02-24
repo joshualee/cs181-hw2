@@ -255,10 +255,8 @@ class EncodedNetworkFramework(NetworkFramework):
     
     """
     # flatten matrix into list
-    pixel_list = reduce(lambda acc, elt: acc.extend(elt), image.pixels)
-    pixel_list = map(lambda pixel: pixel / 256.0, pixel_list)
     new_input = Input()
-    new_input.values = pixel_list
+    new_input.values = [pixel/256.0 for row in image.pixels for pixel in row]
     return new_input
 
   def InitializeWeights(self):
