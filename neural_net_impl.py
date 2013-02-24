@@ -107,7 +107,6 @@ def Backprop(network, input, target, learning_rate):
   """
   # sets the delta for each node (hidden or output)
   def propagate_backward(nodes):
-    # set delta for all nodes
     for i, node in enumerate(nodes):
       # node is an output node
       if len(node.forward_neighbors) == 0:
@@ -125,7 +124,7 @@ def Backprop(network, input, target, learning_rate):
   def update_weights(nodes):
     for node in nodes:
       for weight in node.weights:
-        weight.value = weight.value + learning_rate * node.transformed_value * node.delta
+        weight.value += learning_rate * node.transformed_value * node.delta
   
   network.CheckComplete()
   # 1) We first propagate the input through the network
@@ -158,9 +157,10 @@ def Train(network, inputs, targets, learning_rate, epochs):
   run the *Backprop* over the training set *epochs*-times
   """
   network.CheckComplete()
-  pass
   
-
+  for e in range(epochs):
+    for input, target in zip(inputs, targets):
+      Backprop(network, input, target, learning_rate)
 
 # <--- Problem 3, Question 4 --->
 
