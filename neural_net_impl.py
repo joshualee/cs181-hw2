@@ -109,23 +109,31 @@ def Backprop(network, input, target, learning_rate):
   def propagate_backward(nodes):
     for i, node in enumerate(nodes):
       # node is an output node
-      if len(node.forward_neighbors) == 0:
-        print target
+      if not node.forward_neighbors:
         node.error = target.values[i] - node.transformed_value
       else:
-        # only works if we process in topological order, which we assume
+        # only works if we process in topological order, which we assume               
         node.error = sum(map(
-          lambda child, weight: weight.value * child.delta, 
-          zip(node.forward_neighbors, node.forward_weights)
-        ))                 
+          lambda weight, child: weight.value * child.delta, 
+          zip(node.forward_weights, node.forward_neighbors)
+        ))
       node.delta = node.error * NeuralNetwork.SigmoidPrime(node.raw_value)        
+      # below should be equivalent
+      # node.delta = node.error * node.transformed_value * (1 - node.transformed_value)
       
-  # updates weight based on delta. do in two steps so we don't accidently use
-  # the next time step's weight in our delta calculation
+  """
+  updates weights of child from the parent. done a second step separate from
+  error/delta calculation so we don't accidently use the next time step's weight
+  in our delta calculation
+  """
+  # def update_weights(nodes):
+  #   for node in nodes:
+  #     for weight in node.weights:
+  #       weight.value += learning_rate * node.transformed_value * node.delta
   def update_weights(nodes):
     for node in nodes:
-      for weight in node.weights:
-        weight.value += learning_rate * node.transformed_value * node.delta
+      for weight, child in zip(node.forward_weights, node.forward_neighbors):
+        weight.value += learning_rate * node.transformed_value * child.delta
   
   network.CheckComplete()
   # 1) We first propagate the input through the network
@@ -134,7 +142,7 @@ def Backprop(network, input, target, learning_rate):
   # 2) Then we compute the errors and update the weigths starting with the last layer
   # 3) We now propagate the errors to the hidden layer, and update the weights there too
   propagate_backward((network.hidden_nodes + network.outputs)[::-1])
-  update_weights(network.hidden_nodes + network_outputs)
+  update_weights(network.inputs + network.hidden_nodes)
 
 # <--- Problem 3, Question 3 --->
 
@@ -158,8 +166,6 @@ def Train(network, inputs, targets, learning_rate, epochs):
   run the *Backprop* over the training set *epochs*-times
   """
   network.CheckComplete()
-  
-  print targets
   
   for e in range(epochs):
     for input, target in zip(inputs, targets):
