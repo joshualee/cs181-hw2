@@ -76,6 +76,10 @@ def main():
   print '* * * * * * * * *'
   # Train the network.
   network.Train(images, validation, rate, epochs)
+  
+  
+  
+  
 
 if __name__ == "__main__":
   main()
