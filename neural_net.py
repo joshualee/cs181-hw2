@@ -26,9 +26,9 @@ class Node:
   AND:
 
   inputs                 \
-                           => raw_value => transformed value => 
+                           => raw_value => transformed value =>
   weights & fixed_weight /
-  
+
 
   """
   def __init__(self):
@@ -92,7 +92,7 @@ class NeuralNetwork:
     else:
       assert node_type == self.OUTPUT, 'Unexpected node_type: ' % node_type
       self.outputs.append(node)
-    
+
   def MarkAsComplete(self):
     seen_nodes = {}
     for input in self.inputs:
@@ -127,7 +127,7 @@ class NeuralNetwork:
       total_weight += node.weights[i].value * node.inputs[i].transformed_value
     total_weight += node.fixed_weight.value
     return total_weight
-  
+
   @staticmethod
   def Sigmoid(value):
     try:
@@ -156,7 +156,7 @@ class NetworkFramework(object):
   def __init__(self):
     self.network = NeuralNetwork()
 
-    # Don't worry about these functions, you 
+    # Don't worry about these functions, you
     # will be asked to implement them in another
     # file. You should not modify them here
     self.FeedForwardFn = None
@@ -202,7 +202,7 @@ class NetworkFramework(object):
     # Initializes performance log
     performance_log = []
     performance_log.append((self.Performance(images), self.Performance(validation_images)))
-    
+
     # Loop through the specified number of training epochs.
     for i in range(epochs):
 
