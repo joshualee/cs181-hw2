@@ -112,15 +112,15 @@ def Backprop(network, input, target, learning_rate):
       if not node.forward_neighbors:
         node.error = target.values[i] - node.transformed_value
       else:
-        # only works if we process in topological order, which we assume               
+        # only works if we process in topological order, which we assume
         node.error = sum(map(
-          lambda weight, child: weight.value * child.delta, 
+          lambda weight, child: weight.value * child.delta,
           zip(node.forward_weights, node.forward_neighbors)
         ))
-      node.delta = node.error * NeuralNetwork.SigmoidPrime(node.raw_value)        
+      node.delta = node.error * NeuralNetwork.SigmoidPrime(node.raw_value)
       # below should be equivalent
       # node.delta = node.error * node.transformed_value * (1 - node.transformed_value)
-      
+
   """
   updates weights of child from the parent. done a second step separate from
   error/delta calculation so we don't accidently use the next time step's weight
@@ -134,7 +134,7 @@ def Backprop(network, input, target, learning_rate):
     for node in nodes:
       for weight, child in zip(node.forward_weights, node.forward_neighbors):
         weight.value += learning_rate * node.transformed_value * child.delta
-  
+
   network.CheckComplete()
   # 1) We first propagate the input through the network
   FeedForward(network, input)
@@ -212,12 +212,12 @@ class EncodedNetworkFramework(NetworkFramework):
     # encoded_label = [0.0] * 10
     # encoded_label[label] = 1.0
     # return encoded_label
-    
+
     new_target = Target()
     new_target.values = [0.0] * 10
     new_target.values[label] = 1.0
     return new_target
-    
+
 
   def GetNetworkLabel(self):
     """
@@ -318,12 +318,12 @@ class SimpleNetwork(EncodedNetworkFramework):
     should be connected to every output node.
     """
     super(SimpleNetwork, self).__init__() # < Don't remove this line >
-    
-    # 1) Adds an input node for each pixel.    
+
+    # 1) Adds an input node for each pixel.
     for i in range(196):
       new_input = Node()
       self.network.AddNode(new_input, NeuralNetwork.INPUT)
-    
+
     # 2) Add an output node for each possible digit label.
     for i in range(10):
       new_output = Node()
