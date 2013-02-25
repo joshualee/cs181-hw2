@@ -110,6 +110,7 @@ def Backprop(network, input, target, learning_rate):
     for i, node in enumerate(nodes):
       # node is an output node
       if len(node.forward_neighbors) == 0:
+        print target
         node.error = target.values[i] - node.transformed_value
       else:
         # only works if we process in topological order, which we assume
@@ -132,7 +133,7 @@ def Backprop(network, input, target, learning_rate):
   
   # 2) Then we compute the errors and update the weigths starting with the last layer
   # 3) We now propagate the errors to the hidden layer, and update the weights there too
-  propagate_backward((network.hidden_nodes + network.output_nodes)[::-1])
+  propagate_backward((network.hidden_nodes + network.outputs)[::-1])
   update_weights(network.hidden_nodes + network_outputs)
 
 # <--- Problem 3, Question 3 --->
@@ -157,6 +158,8 @@ def Train(network, inputs, targets, learning_rate, epochs):
   run the *Backprop* over the training set *epochs*-times
   """
   network.CheckComplete()
+  
+  print targets
   
   for e in range(epochs):
     for input, target in zip(inputs, targets):
@@ -199,9 +202,16 @@ class EncodedNetworkFramework(NetworkFramework):
     Make sure that the elements of the encoding are floats.
     
     """
-    encoded_label = [0.0] * 10
-    encoded_label[label] = 1.0
-    return encoded_label
+    # Code seems to expect a Target instance rather than a simple list
+    # encoded_label = [0.0] * 10
+    # encoded_label[label] = 1.0
+    # return encoded_label
+    
+    new_target = Target()
+    new_target.values = [0.0] * 10
+    new_target.values[label] = 1.0
+    return new_target
+    
 
   def GetNetworkLabel(self):
     """
@@ -304,9 +314,16 @@ class SimpleNetwork(EncodedNetworkFramework):
     super(SimpleNetwork, self).__init__() # < Don't remove this line >
     
     # 1) Adds an input node for each pixel.    
+    for i in range(196):
+      new_input = Node()
+      self.network.AddNode(new_input, NeuralNetwork.INPUT)
+    
     # 2) Add an output node for each possible digit label.
-    pass
-
+    for i in range(10):
+      new_output = Node()
+      for input_node in self.network.inputs:
+        new_output.AddInput(input_node, None, self.network)
+      self.network.AddNode(new_output, NeuralNetwork.OUTPUT)
 
 #<---- Problem 3, Question 7 --->
 
