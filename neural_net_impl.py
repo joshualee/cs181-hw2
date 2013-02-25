@@ -44,7 +44,6 @@ def FeedForward(network, input):
         iterate through each list in order and have the invariant
         that all my parents have already been processed.
   '''
-  
   def propagate_forward(nodes):
     for node in nodes:
       node.raw_value = NeuralNetwork.ComputeRawValue(node)
@@ -61,7 +60,6 @@ def FeedForward(network, input):
   # 2) Propagates to hidden layer
   # 3) Propagates to the output layer
   propagate_forward(network.hidden_nodes + network.outputs)
-  
 
 #< --- Problem 3, Question 2
 
@@ -114,12 +112,10 @@ def Backprop(network, input, target, learning_rate):
       else:
         # only works if we process in topological order, which we assume               
         node.error = sum(map(
-          lambda weight, child: weight.value * child.delta, 
+          lambda (weight, child): weight.value * child.delta, 
           zip(node.forward_weights, node.forward_neighbors)
         ))
-      node.delta = node.error * NeuralNetwork.SigmoidPrime(node.raw_value)        
-      # below should be equivalent
-      # node.delta = node.error * node.transformed_value * (1 - node.transformed_value)
+      node.delta = node.error * NeuralNetwork.SigmoidPrime(node.raw_value)
       
   """
   updates weights of child from the parent. done a second step separate from
@@ -141,7 +137,7 @@ def Backprop(network, input, target, learning_rate):
   
   # 2) Then we compute the errors and update the weigths starting with the last layer
   # 3) We now propagate the errors to the hidden layer, and update the weights there too
-  propagate_backward((network.hidden_nodes + network.outputs)[::-1])
+  propagate_backward(network.outputs + network.hidden_nodes[::-1])
   update_weights(network.inputs + network.hidden_nodes)
 
 # <--- Problem 3, Question 3 --->
@@ -327,9 +323,9 @@ class SimpleNetwork(EncodedNetworkFramework):
     # 2) Add an output node for each possible digit label.
     for i in range(10):
       new_output = Node()
+      self.network.AddNode(new_output, NeuralNetwork.OUTPUT)
       for input_node in self.network.inputs:
         new_output.AddInput(input_node, None, self.network)
-      self.network.AddNode(new_output, NeuralNetwork.OUTPUT)
 
 #<---- Problem 3, Question 7 --->
 
@@ -356,10 +352,21 @@ class HiddenNetwork(EncodedNetworkFramework):
     super(HiddenNetwork, self).__init__() # < Don't remove this line >
 
     # 1) Adds an input node for each pixel
+    for i in range(196):
+      new_input = Node()
+      self.network.AddNode(new_input, NeuralNetwork.INPUT)
     # 2) Adds the hidden layer
+    for i in range(number_of_hidden_nodes):
+      new_hidden = Node()
+      self.network.AddNode(new_hidden, NeuralNetwork.HIDDEN)
+      for input_node in self.network.inputs:
+        new_hidden.AddInput(input_node, None, self.network)
     # 3) Adds an output node for each possible digit label.
-    pass
-    
+    for i in range(10):
+      new_output = Node()
+      self.network.AddNode(new_output, NeuralNetwork.OUTPUT)
+      for hidden_node in self.network.hidden_nodes:
+        new_output.AddInput(hidden_node, None, self.network)
 
 #<--- Problem 3, Question 8 ---> 
 
