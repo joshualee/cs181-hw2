@@ -44,13 +44,14 @@ def FeedForward(network, input):
         iterate through each list in order and have the invariant
         that all my parents have already been processed.
   '''
+
   def propagate_forward(nodes):
     for node in nodes:
       node.raw_value = NeuralNetwork.ComputeRawValue(node)
       node.transformed_value = NeuralNetwork.Sigmoid(node.raw_value)
-  
+
   network.CheckComplete()
-  
+
   # 1) Assign input values to input nodes
   for i, input_node in enumerate(network.inputs):
     input_node.raw_value = input.values[i]
@@ -101,7 +102,7 @@ def Backprop(network, input, target, learning_rate):
   In particular, the error should be a function of:
 
   target[i] - network.outputs[i].transformed_value
-  
+
   """
   # sets the delta for each node (hidden or output)
   def propagate_backward(nodes):
@@ -134,7 +135,7 @@ def Backprop(network, input, target, learning_rate):
   network.CheckComplete()
   # 1) We first propagate the input through the network
   FeedForward(network, input)
-  
+
   # 2) Then we compute the errors and update the weigths starting with the last layer
   # 3) We now propagate the errors to the hidden layer, and update the weights there too
   propagate_backward(network.outputs + network.hidden_nodes[::-1])
@@ -162,7 +163,7 @@ def Train(network, inputs, targets, learning_rate, epochs):
   run the *Backprop* over the training set *epochs*-times
   """
   network.CheckComplete()
-  
+
   for e in range(epochs):
     for input, target in zip(inputs, targets):
       Backprop(network, input, target, learning_rate)
@@ -176,7 +177,7 @@ class EncodedNetworkFramework(NetworkFramework):
     YOU DO NOT NEED TO MODIFY THIS __init__ method
     """
     super(EncodedNetworkFramework, self).__init__() # < Don't remove this line >
-    
+
   # <--- Fill in the methods below --->
 
   def EncodeLabel(self, label):
@@ -202,7 +203,7 @@ class EncodedNetworkFramework(NetworkFramework):
     Notes:
     ----
     Make sure that the elements of the encoding are floats.
-    
+
     """
     # Code seems to expect a Target instance rather than a simple list
     # encoded_label = [0.0] * 10
@@ -227,7 +228,7 @@ class EncodedNetworkFramework(NetworkFramework):
 
     Description:
     -----------
-    The function looks for the transformed_value of each output, then decides 
+    The function looks for the transformed_value of each output, then decides
     which label to attribute to this list of outputs. The idea is to 'line up'
     the outputs, and consider that the label is the index of the output with the
     highest *transformed_value* attribute
@@ -240,7 +241,7 @@ class EncodedNetworkFramework(NetworkFramework):
 
     # Then the returned value (i.e, the label) should be the index of the item 0.7,
     # which is 3
-    
+
     """
     labels = map(lambda node: node.transformed_value, self.network.outputs)
     return labels.index(max(labels))
@@ -264,7 +265,7 @@ class EncodedNetworkFramework(NetworkFramework):
     between 0 and 256.0. The function transforms this into a unique list
     of 14 x 14 items, with normalized values (that is, the maximum possible
     value should be 1).
-    
+
     """
     # flatten matrix into list
     new_input = Input()
@@ -289,7 +290,7 @@ class EncodedNetworkFramework(NetworkFramework):
     -----
     Consider the *random* module. You may use the the *weights* attribute
     of self.network.
-    
+
     """
     for weight in self.network.weights:
         weight.value = random.uniform(-0.01, 0.01)
@@ -368,7 +369,8 @@ class HiddenNetwork(EncodedNetworkFramework):
       for hidden_node in self.network.hidden_nodes:
         new_output.AddInput(hidden_node, None, self.network)
 
-#<--- Problem 3, Question 8 ---> 
+
+#<--- Problem 3, Question 8 --->
 
 class CustomNetwork(EncodedNetworkFramework):
   def __init__(self):

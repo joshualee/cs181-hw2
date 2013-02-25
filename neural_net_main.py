@@ -64,7 +64,7 @@ def main():
 
   # Initialize network weights
   network.InitializeWeights()
-  
+
 
   # Displays information
   print '* * * * * * * * *'
