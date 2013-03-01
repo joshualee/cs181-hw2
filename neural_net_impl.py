@@ -1,6 +1,7 @@
 from neural_net import NeuralNetwork, NetworkFramework
 from neural_net import Node, Target, Input
 import random
+import math
 
 
 # <--- Problem 3, Question 1 --->
@@ -401,8 +402,7 @@ class CustomNetwork(EncodedNetworkFramework):
       for e in range(epochs):
         for input, target in zip(inputs, targets):
           Backprop(network, input, target, self.learning_rate)
-        self.learning_rate = e**-(e/20.)
-        print "learning rate: {0}".format(self.learning_rate)
+        self.learning_rate = max(self.learning_rate - (self.learning_rate/35.), 0)
 
     # new training function uses decaying learning rate
     self.RegisterTrainFunction(DecayingLRateTrain)
