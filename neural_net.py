@@ -203,6 +203,10 @@ class NetworkFramework(object):
     performance_log = []
     performance_log.append((self.Performance(images), self.Performance(validation_images)))
 
+    max_performance = 0
+    iteration_without_update = 0
+    loops = 0
+
     # Loop through the specified number of training epochs.
     for i in range(epochs):
 
@@ -212,12 +216,26 @@ class NetworkFramework(object):
       # Print out the current training and validation performance.
       perf_train = self.Performance(images)
       perf_validate = self.Performance(validation_images)
+
       print '%d Performance: %.8f %.3f' % (
         i + 1, perf_train, perf_validate)
 
       # updates log
       performance_log.append((perf_train, perf_validate))
-    return(performance_log)
+
+      loops += 1
+
+      # if we haven't increased the max validation in 10 iterations, then we stop
+      if perf_validate > max_performance:
+        max_performance = perf_validate
+        iteration_without_update = 0
+      else:
+        iteration_without_update += 1
+
+      if iteration_without_update == 10:
+          break;
+
+    return(loops, performance_log)
 
   def RegisterFeedForwardFunction(self, fn):
     self.FeedForwardFn = fn

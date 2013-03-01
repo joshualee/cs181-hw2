@@ -3,6 +3,7 @@ from neural_net import *
 from neural_net_impl import *
 import sys
 import random
+import matplotlib.pyplot as plt
 
 
 def parseArgs(args):
@@ -35,7 +36,7 @@ def main():
   epochs = int(args_map['-e'])
   rate = float(args_map['-r'])
   networkType = args_map['-t']
-
+  graph = '-g' in args_map
 
   # Load in the training data.
   images = DataReader.GetImages('training-9k.txt', -1)
@@ -65,7 +66,6 @@ def main():
   # Initialize network weights
   network.InitializeWeights()
 
-
   # Displays information
   print '* * * * * * * * *'
   print 'Parameters => Epochs: %d, Learning Rate: %f' % (epochs, rate)
@@ -75,11 +75,34 @@ def main():
           len(network.network.outputs)))
   print '* * * * * * * * *'
   # Train the network.
-  network.Train(images, validation, rate, epochs)
-  
-  
-  
-  
+  epochs, data = network.Train(images, validation, rate, epochs)
+  data = data[1::]
+
+
+  print "logs"
+  print data
+
+  if graph:
+      plt.clf()
+      plt.title('Performance of Hidden Neural Network with 30 Hidden Units vs. Epoch')
+      plt.xlabel('Epoch')
+      plt.ylabel('Performance')
+
+      y_training = map(lambda x: x[0], data)
+      y_test = map(lambda x: x[1], data)
+
+      lower_bound = max(min(y_test) - .1, 0.)
+      plt.axis([0, epochs, lower_bound, 1.0])
+
+      print y_training
+      print y_test
+
+      xs = range(1, epochs+1)
+      p1, = plt.plot(xs, y_training, color='b')
+      p2, = plt.plot(xs, y_test, color='r')
+
+      plt.legend((p1,p2,), ('Training Data', 'Test Data'), 'lower right')
+      plt.savefig('hidden30.pdf')
 
 if __name__ == "__main__":
   main()
