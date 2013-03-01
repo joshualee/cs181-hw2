@@ -41,8 +41,8 @@ def main():
   if '-n' in args_map:
       number_of_hidden_nodes = int(args_map['-n'])
 
-  if '-l' in args_map:
-      number_of_layers = int(args_map['-l'])
+  if '-p' in args_map:
+      edge_probability = float(args_map['-p'])
 
   # Load in the training data.
   images = DataReader.GetImages('training-9k.txt', -1)
@@ -63,7 +63,7 @@ def main():
   if networkType == 'hidden':
     network = HiddenNetwork(number_of_hidden_nodes)
   if networkType == 'custom':
-    network = CustomNetwork(number_of_hidden_nodes, number_of_layers)
+    network = CustomNetwork(number_of_hidden_nodes, edge_probability)
 
   # Hooks user-implemented functions to network
   network.FeedForwardFn = FeedForward

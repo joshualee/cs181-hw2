@@ -374,14 +374,14 @@ class HiddenNetwork(EncodedNetworkFramework):
 #<--- Problem 3, Question 8 --->
 
 class CustomNetwork(EncodedNetworkFramework):
-  def __init__(self, number_of_hidden_nodes=15, number_of_layers=1, learning_rate = .1):
+  def __init__(self, number_of_hidden_nodes=15, learning_rate = .1, edge_probability = 1.0):
     """
     Arguments:
     ---------
 
     number_of_hidden_nodes : the number of hidden nodes on one layer
-    number_of_layers : the number of hidden layers
-    learning_rate : the learning rate that we start at, which decays every time we train an instance
+    learning_rate : the learning rate that we start at. this decays every time we enter a new epoch
+    edge_probability : probability that a node will have an edge with its parent node
 
     Returns:
     --------
@@ -389,45 +389,45 @@ class CustomNetwork(EncodedNetworkFramework):
 
     Description:
     -----------
+    Our custom network uses two new strategies for generating hypothesis.
+    Firstly, it uses a decaying learning_rate. After every epoch, we decrease
+    the learning rate. We give it a lower bound of .0001 Secondly, every time
+    we generate a new hidden node our output node, we set a probability p that
+    it is connected to any one of its potential parent nodes. We no longer
+    have a connected graph, but by reducing the complexity we can potentially
+    reduce overfitting.
 
     """
     super(CustomNetwork, self).__init__() # <Don't remove this line>
 
     self.learning_rate = learning_rate
 
-    print "initialized"
     # every epoch, we reduce the learning rate
     def DecayingLRateTrain(network, inputs, targets, learning_rate, epochs):
       network.CheckComplete()
       for e in range(epochs):
         for input, target in zip(inputs, targets):
           Backprop(network, input, target, self.learning_rate)
-        self.learning_rate = max(self.learning_rate - (self.learning_rate/35.), 0)
+        self.learning_rate = max(self.learning_rate - (self.learning_rate/25.), .0001)
 
     # new training function uses decaying learning rate
     self.RegisterTrainFunction(DecayingLRateTrain)
 
     # 1) Adds an input node for each pixel
-    prev_layer = []
     for i in range(196):
       new_input = Node()
       self.network.AddNode(new_input, NeuralNetwork.INPUT)
-      prev_layer.append(new_input)
-
-    # 2) Adds hidden layers
-    for i in range(number_of_layers):
-        my_layer = []
-        for i in range(number_of_hidden_nodes):
-          new_hidden = Node()
-          self.network.AddNode(new_hidden, NeuralNetwork.HIDDEN)
-          for input_node in prev_layer:
+    # 2) Adds the hidden layer
+    for i in range(number_of_hidden_nodes):
+      new_hidden = Node()
+      self.network.AddNode(new_hidden, NeuralNetwork.HIDDEN)
+      for input_node in self.network.inputs:
+        if random.random() < .9:
             new_hidden.AddInput(input_node, None, self.network)
-          my_layer.append(new_hidden)
-        prev_layer = my_layer
-
     # 3) Adds an output node for each possible digit label.
     for i in range(10):
       new_output = Node()
       self.network.AddNode(new_output, NeuralNetwork.OUTPUT)
-      for hidden_node in prev_layer:
-        new_output.AddInput(hidden_node, None, self.network)
+      for hidden_node in self.network.hidden_nodes:
+        if random.random() < .9:
+            new_output.AddInput(hidden_node, None, self.network)
