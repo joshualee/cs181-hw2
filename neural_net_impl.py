@@ -113,7 +113,7 @@ def Backprop(network, input, target, learning_rate):
       else:
         # only works if we process in topological order, which we assume
         node.error = sum(map(
-          lambda (weight, child): weight.value * child.delta, 
+          lambda (weight, child): weight.value * child.delta,
           zip(node.forward_weights, node.forward_neighbors)
         ))
       node.delta = node.error * NeuralNetwork.SigmoidPrime(node.raw_value)
@@ -373,19 +373,61 @@ class HiddenNetwork(EncodedNetworkFramework):
 #<--- Problem 3, Question 8 --->
 
 class CustomNetwork(EncodedNetworkFramework):
-  def __init__(self):
+  def __init__(self, number_of_hidden_nodes=15, number_of_layers=1, learning_rate = .1):
     """
     Arguments:
     ---------
-    Your pick.
+
+    number_of_hidden_nodes : the number of hidden nodes on one layer
+    number_of_layers : the number of hidden layers
+    learning_rate : the learning rate that we start at, which decays every time we train an instance
 
     Returns:
     --------
-    Your pick
+    Nothing
 
     Description:
     -----------
-    Surprise me!
+
     """
     super(CustomNetwork, self).__init__() # <Don't remove this line>
-    pass
+
+    self.learning_rate = learning_rate
+
+    print "initialized"
+    # every epoch, we reduce the learning rate
+    def DecayingLRateTrain(network, inputs, targets, learning_rate, epochs):
+      network.CheckComplete()
+      for e in range(epochs):
+        for input, target in zip(inputs, targets):
+          Backprop(network, input, target, self.learning_rate)
+        self.learning_rate = e**-(e/20.)
+        print "learning rate: {0}".format(self.learning_rate)
+
+    # new training function uses decaying learning rate
+    self.RegisterTrainFunction(DecayingLRateTrain)
+
+    # 1) Adds an input node for each pixel
+    prev_layer = []
+    for i in range(196):
+      new_input = Node()
+      self.network.AddNode(new_input, NeuralNetwork.INPUT)
+      prev_layer.append(new_input)
+
+    # 2) Adds hidden layers
+    for i in range(number_of_layers):
+        my_layer = []
+        for i in range(number_of_hidden_nodes):
+          new_hidden = Node()
+          self.network.AddNode(new_hidden, NeuralNetwork.HIDDEN)
+          for input_node in prev_layer:
+            new_hidden.AddInput(input_node, None, self.network)
+          my_layer.append(new_hidden)
+        prev_layer = my_layer
+
+    # 3) Adds an output node for each possible digit label.
+    for i in range(10):
+      new_output = Node()
+      self.network.AddNode(new_output, NeuralNetwork.OUTPUT)
+      for hidden_node in prev_layer:
+        new_output.AddInput(hidden_node, None, self.network)

@@ -38,6 +38,12 @@ def main():
   networkType = args_map['-t']
   graph = '-g' in args_map
 
+  if '-n' in args_map:
+      number_of_hidden_nodes = int(args_map['-n'])
+
+  if '-l' in args_map:
+      number_of_layers = int(args_map['-l'])
+
   # Load in the training data.
   images = DataReader.GetImages('training-9k.txt', -1)
   for image in images:
@@ -55,13 +61,16 @@ def main():
   if networkType == 'simple':
     network = SimpleNetwork()
   if networkType == 'hidden':
-    network = HiddenNetwork()
+    network = HiddenNetwork(number_of_hidden_nodes)
   if networkType == 'custom':
-    network = CustomNetwork()
+    network = CustomNetwork(number_of_hidden_nodes, number_of_layers)
 
   # Hooks user-implemented functions to network
   network.FeedForwardFn = FeedForward
-  network.TrainFn = Train
+
+  # If network type is custom, we use decaying function
+  if networkType != 'custom':
+      network.TrainFn = Train
 
   # Initialize network weights
   network.InitializeWeights()
@@ -78,9 +87,9 @@ def main():
   epochs, data = network.Train(images, validation, rate, epochs)
   data = data[1::]
 
-
-  print "logs"
-  print data
+  test_images = DataReader.GetImages('test-1k.txt', -1)
+  test_performance = network.Performance(test_images)
+  print "Performance on test data: {0}".format(test_performance)
 
   if graph:
       plt.clf()
@@ -93,9 +102,6 @@ def main():
 
       lower_bound = max(min(y_test) - .1, 0.)
       plt.axis([0, epochs, lower_bound, 1.0])
-
-      print y_training
-      print y_test
 
       xs = range(1, epochs+1)
       p1, = plt.plot(xs, y_training, color='b')
